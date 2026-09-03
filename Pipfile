@@ -20,6 +20,7 @@ typing-extensions = "*"
 flask-jwt-extended = "==4.6.0"
 wtforms = "==3.1.2"
 sqlalchemy = "*"
+eralchemy2 = "*"
 
 [requires]
 python_version = "3.13"
@@ -33,4 +34,5 @@ upgrade="flask db upgrade"
 downgrade="flask db downgrade"
 insert-test-data="flask insert-test-data"
 reset_db="bash ./docs/assets/reset_migrations.bash"
+diagram = "eralchemy2 -i 'postgresql://gitpod:postgres@localhost:5432/example' -o diagram.png"
 deploy="echo 'Please follow this 3 steps to deploy: https://github.com/4GeeksAcademy/flask-rest-hello/blob/master/README.md#deploy-your-website-to-heroku' "

@@ -1,38 +1,53 @@
-export const initialStore=()=>{
-  return{
+export const initialStore = () => {
+  return {
     message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+    // Si ya había una sesión guardada (localStorage), la recuperamos al
+    // recargar la página, para no cerrar la sesión sin querer.
+    token: localStorage.getItem("token") || null,
+    user: null,
+    modules: [],
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
+  switch (action.type) {
+    // Se deja el set_hello por si la plantilla lo usa de prueba
+    case "set_hello":
       return {
         ...store,
-        message: action.payload
+        message: action.payload,
       };
-      
-    case 'add_task':
 
-      const { id,  color } = action.payload
-
+    // Guardar los módulos cuando vengan del backend
+    case "set_modules":
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        modules: action.payload,
       };
+
+    // Guarda el token al iniciar sesión
+    case "set_token":
+      return {
+        ...store,
+        token: action.payload,
+      };
+
+    // Guarda los datos del usuario logueado
+    case "set_user":
+      return {
+        ...store,
+        user: action.payload,
+      };
+
+    // Limpia los datos al cerrar sesión
+    case "logout":
+      return {
+        ...store,
+        token: null,
+        user: null,
+      };
+
     default:
-      throw Error('Unknown action.');
-  }    
+      return store;
+  }
 }
