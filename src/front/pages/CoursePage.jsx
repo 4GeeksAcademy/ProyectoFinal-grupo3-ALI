@@ -30,7 +30,7 @@ const CoursePage = () => {
 
     useEffect(() => {
         getLearningPath();
-    }, [])
+    }, [params.theId])
 
     return <div className="container">
         <CourseDescription data={learningPath} />
