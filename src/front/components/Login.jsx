@@ -38,6 +38,7 @@ export const Login = () => {
             // También lo guardamos en localStorage para no perder la sesión
             // si el usuario recarga la página.
             localStorage.setItem("token", data.token);
+            
             localStorage.setItem("user", JSON.stringify(data.user));
 
             navigate("/dashboard");

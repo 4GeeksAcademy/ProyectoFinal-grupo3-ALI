@@ -1,35 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const TopBar = () => {
-    return (
-        <div className="d-flex justify-content-between align-items-center py-3">
-            <input
-                type="text"
-                className="form-control"
-                placeholder="¿Qué quieres aprender hoy?"
-                style={{ maxWidth: "350px" }}
-            />
-
-            <div className="d-flex align-items-center gap-4">
-                <span>Mis Cursos</span>
-                <span className="position-relative">
-                    <i className="fa-regular fa-bell"></i>
-                    <span className="badge bg-danger rounded-circle position-absolute" style={{ top: "-5px", right: "-8px", width: "10px", height: "10px" }}></span>
-                </span>
-            </div>
-        </div>
-    );
-};
-
 export const Hero = () => {
     return (
         <div className="container">
-            <TopBar />
-
             <div className="text-center py-5">
                 <span className="badge bg-primary mb-3">
-                    Nueva ruta disponible: Smart Contracts en Solidity
+                    Nueva ruta próximamente: Smart Contracts en Solidity
                 </span>
 
                 <h1 className="mb-3">

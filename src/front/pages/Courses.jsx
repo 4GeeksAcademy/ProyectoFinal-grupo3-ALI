@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getCourses } from "../services/coursesService";
 import { CourseFilterBar } from "../components/CourseFilterBar";
 import { CourseCard } from "../components/CourseCard";
@@ -7,7 +8,8 @@ export const Courses = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchText, setSearchText] = useState("");
+    const [searchParams] = useSearchParams();
+    const [searchText, setSearchText] = useState(searchParams.get("q") || "");
     const [activeLevel, setActiveLevel] = useState("Todas las Rutas");
 
     // Carga los cursos reales desde el backend al montar la página.
