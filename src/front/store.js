@@ -6,6 +6,7 @@ export const initialStore = () => {
     token: localStorage.getItem("token") || null,
     user: null,
     modules: [],
+    learningPaths: [],
   };
 };
 
@@ -17,28 +18,30 @@ export default function storeReducer(store, action = {}) {
         ...store,
         message: action.payload,
       };
-
     // Guardar los módulos cuando vengan del backend
     case "set_modules":
       return {
         ...store,
         modules: action.payload,
       };
-
+    // Guarda las rutas de aprendizaje cuando vengan del backend
+    case "set_learning_paths":
+      return {
+        ...store,
+        learningPaths: action.payload,
+      };
     // Guarda el token al iniciar sesión
     case "set_token":
       return {
         ...store,
         token: action.payload,
       };
-
     // Guarda los datos del usuario logueado
     case "set_user":
       return {
         ...store,
         user: action.payload,
       };
-
     // Limpia los datos al cerrar sesión
     case "logout":
       return {
@@ -46,7 +49,6 @@ export default function storeReducer(store, action = {}) {
         token: null,
         user: null,
       };
-
     default:
       return store;
   }
