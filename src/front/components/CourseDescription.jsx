@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const CourseDescription = ({ data }) => {
 
     return <div className="container bg-secondary rounded-4 p-4">
@@ -11,7 +13,8 @@ const CourseDescription = ({ data }) => {
                         <i className="fa-regular fa-clock"></i> {data?.time_required}
                     </div>
                     <div className="col-auto bg-white rounded ms-3 mb-1">
-                        <i className="fa-solid fa-book"></i> Lecciones
+                        <i className="fa-solid fa-book"></i> {data?.modules.reduce((num, module) =>
+                            num + module.lessons.length, 0)} Lecciones
                     </div>
                 </div>
                 <div className="row">
@@ -20,14 +23,14 @@ const CourseDescription = ({ data }) => {
                 </div>
                 <div className="row justify-content-start">
                     <div className="col-auto my-1">
-                        <button className="btn btn-info rounded-5">
-                            <i className="fa-solid fa-circle-play"></i> Ingresar a esta ruta
-                        </button>
+                        <Link to={`/lesson/${data?.modules[0].lessons[0].id}`} className="btn btn-info rounded-5">
+                            <i className="fa-solid fa-circle-play"></i> Comenzar ahora
+                        </Link>
                     </div>
                     <div className="col-auto my-1">
-                        <button className="btn btn-outline-light rounded-5">
+                        <Link to="/courses" className="btn btn-outline-light rounded-5">
                             <i className="fa-solid fa-arrow-left-long"></i> Ver todas las rutas
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

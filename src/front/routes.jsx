@@ -16,6 +16,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Courses } from "./pages/Courses";
 import { Admin } from "./pages/Admin";
 import CoursePage from "./pages/CoursePage";
+import { QuizPage } from "./pages/QuizPage";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -47,6 +48,7 @@ export const router = createBrowserRouter(
       {/* Hay que confirmar con nuestro lider Luis las rutas de courses */}
       <Route path="/courses" element={<Courses />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/quizzes/:lessonId" element={<QuizPage />} />
       <Route path="/course/:theId" element={<CoursePage />} />
     </Route>
   )

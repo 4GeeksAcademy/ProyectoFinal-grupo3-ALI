@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 const CoursePage = () => {
 
     const [learningPath, setLearningPath] = useState();
+    const [userProgress, setUserProgress] = useState();
     const params = useParams();
 
     const getLearningPath = async () => {
@@ -28,11 +29,44 @@ const CoursePage = () => {
         }
     }
 
+    const getUserProgress = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/1`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo obtener el progreso del usuario");
+            }
+            const data = await response.json();
+            setUserProgress(data);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const totalLessonsOfPath = () => {
+        return learningPath?.modules.reduce((num, module) => num + module.lessons.length, 0);
+    }
+
+    const lessonsDoneOfPath = () => {
+        return userProgress?.filter(progress => progress.is_completed === true).length;
+    }
+
+    const progressPath = () => {
+        return lessonsDoneOfPath()*100/totalLessonsOfPath();
+    }
+
     useEffect(() => {
         getLearningPath();
-    }, [params.theId])
+        getUserProgress();
+    }, [])
 
-    return <div className="container">
+    return <div className="container mt-4">
         <CourseDescription data={learningPath} />
         <div className="row my-3">
             <div className="col-md-6 col-sm-12">
@@ -42,7 +76,7 @@ const CoursePage = () => {
                 </div>
                 {learningPath?.modules.map((module, index) => {
                     return <div key={module.id} className="mb-4">
-                        <ModuleCard data={module} />
+                        <ModuleCard data={module} userProgress={userProgress}/>
                     </div>
                 })}
             </div>
@@ -51,9 +85,10 @@ const CoursePage = () => {
                     <div className="card-body">
                         <h4>Estado de tu aprendizaje</h4>
                         <p>Progreso de la ruta</p>
-                        <p>0 % (0/N lecciones)</p>
+                        <p>{progressPath()} % ({lessonsDoneOfPath()}/{totalLessonsOfPath()} lecciones)</p>
                         <div className="progress" role="progressbar">
-                            <div className="progress-bar" style={{ width: "0%" }}></div>
+                            <div className="progress-bar"
+                            style={{ width: `${progressPath()}%` }}></div>
                         </div>
                     </div>
                 </div>
