@@ -46,12 +46,19 @@ const ModuleCard = ({ data, userProgress }) => {
         </ul>
         <div className="card-footer d-flex justify-content-between align-items-center">
             <div>
-                <i className="fa-solid fa-graduation-cap"></i> Evaluación: Nombre
+                <i className="fa-solid fa-graduation-cap"></i> Evaluación del módulo
             </div>
             <div>
-                <button className="btn btn-primary rounded-5">
-                    Realizar Quiz<i className="fa-solid fa-play fa-2xs ms-2"></i>
-                </button>
+                {data?.lessons?.length > 0 ? (
+                    <Link
+                        to={`/quizzes/${data.lessons[data.lessons.length - 1].id}`}
+                        className="btn btn-primary rounded-5"
+                    >
+                        Realizar Quiz<i className="fa-solid fa-play fa-2xs ms-2"></i>
+                    </Link>
+                ) : (
+                    <span className="text-muted small">Sin lecciones aún</span>
+                )}
             </div>
         </div>
     </div>
