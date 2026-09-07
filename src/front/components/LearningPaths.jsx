@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import LearningPathCard from "./LearningPathCard";
+import { Link } from "react-router-dom";
 
 const LearningPaths = () => {
 
@@ -30,6 +31,13 @@ const LearningPaths = () => {
                     <LearningPathCard data={value} />
                 </div>
             })}
+        </div>
+        <div className="row">
+            <div className="col-12 text-center pb-5">
+                <Link to="/courses" className="btn btn-outline-dark rounded-pill px-4">
+                    Ver todas las rutas
+                </Link>
+            </div>
         </div>
     </div>
 }
