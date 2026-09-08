@@ -6,12 +6,14 @@ export const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+        setSuccess(null);
         setLoading(true);
 
         try {
@@ -30,7 +32,13 @@ export const Register = () => {
                 throw new Error(data.error || "No se pudo crear la cuenta");
             }
 
-            navigate("/login");
+            setSuccess(
+                data.message ||
+                "Usuario registrado con éxito. Te hemos enviado un correo de verificación."
+            );
+            setUsername("");
+            setEmail("");
+            setPassword("");
         } catch (err) {
             setError(err.message);
         } finally {
@@ -39,10 +47,11 @@ export const Register = () => {
     };
 
     return (
-        <div className="card p-4 shadow-sm w-100" style={{ maxWidth: "400px", margin: "0 auto" }}>
-            <h3 className="text-center mb-4">Crear Cuenta</h3>
+        <div className="container mt-5" style={{ maxWidth: "480px" }}>
+            <h2 className="text-center mb-4">Crear Cuenta</h2>
 
-            {error && <div className="alert alert-danger py-2">{error}</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -50,38 +59,48 @@ export const Register = () => {
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="tu_nombre"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        required
                     />
                 </div>
+
                 <div className="mb-3">
                     <label className="form-label">Correo Electrónico</label>
                     <input
                         type="email"
                         className="form-control"
-                        placeholder="estudiante@ejemplo.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>
+
                 <div className="mb-3">
                     <label className="form-label">Contraseña</label>
                     <input
                         type="password"
                         className="form-control"
-                        placeholder="********"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
                 </div>
+
                 <button type="submit" className="btn btn-success w-100" disabled={loading}>
-                    {loading ? "Creando cuenta..." : "Registrarse"}
+                    {loading ? "Registrando..." : "Registrarse"}
                 </button>
             </form>
+
+            <p className="text-center mt-3">
+                ¿Ya tienes una cuenta?{" "}
+                <span
+                    role="button"
+                    className="text-primary"
+                    onClick={() => navigate("/login")}
+                >
+                    Inicia Sesión
+                </span>
+            </p>
         </div>
     );
 };
