@@ -271,6 +271,9 @@ def handle_hello():
 @api.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
+    current_user = db.session.get(User, int(get_jwt_identity()))
+    if not current_user or current_user.role != UserType.admin:
+        return jsonify({"error": "No tienes permiso para acceder a este recurso"}), 403
     users = db.session.execute(db.select(User)).scalars().all()
     return jsonify([u.serialize() for u in users]), 200
 
@@ -440,19 +443,32 @@ def get_user_progress(user_id):
 @api.route('/progress/<int:user_id>/<int:lesson_id>', methods=['GET'])
 @jwt_required()
 def get_lesson_progress(user_id, lesson_id):
+    current_user_id = int(get_jwt_identity())
+    if current_user_id != user_id:
+        return jsonify({"error": "No tienes permiso para acceder a este recurso"}), 403
+
     progress = db.session.execute(db.select(UserProgress).filter_by(
         user_id=user_id, lesson_id=lesson_id)).scalars().one_or_none()
+
+    if not progress:
+        return jsonify({"lesson_id": lesson_id, "is_completed": False, "quiz_score": None}), 200
+
     return jsonify({"lesson_id": progress.lesson_id,
                     "is_completed": progress.is_completed,
                     "quiz_score": progress.quiz_score}), 200
 
 
 @api.route('/progress', methods=['POST'])
+@jwt_required()
 def create_initial_progress():
+    current_user_id = int(get_jwt_identity())
     body = request.get_json()
 
     if not isinstance(body, list):
         return jsonify({"error": "Se esperaba una lista de objetos JSON"}), 400
+
+    if any(item.get("user_id") != current_user_id for item in body):
+        return jsonify({"error": "No tienes permiso para crear progreso de otro usuario"}), 403
 
     initial_progress = []
 
@@ -476,12 +492,21 @@ def create_initial_progress():
 
 
 @api.route('/progress/<int:user_id>/<int:lesson_id>', methods=['PUT'])
+@jwt_required()
 def update_progress(user_id, lesson_id):
-    body = request.get_json(silent=True)
+    current_user_id = int(get_jwt_identity())
+    if current_user_id != user_id:
+        return jsonify({"error": "No tienes permiso para modificar este recurso"}), 403
+
+    body = request.get_json(silent=True) or {}
     progress = db.session.execute(db.select(UserProgress).filter_by(
         user_id=user_id, lesson_id=lesson_id)).scalars().one_or_none()
 
     try:
+        if not progress:
+            progress = UserProgress(user_id=user_id, lesson_id=lesson_id)
+            db.session.add(progress)
+
         progress.is_completed = body.get("is_completed", progress.is_completed)
         progress.quiz_score = body.get("quiz_score", progress.quiz_score)
         db.session.commit()

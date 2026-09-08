@@ -23,6 +23,7 @@ export const Navbar = () => {
 	const handleLogout = () => {
 		dispatch({ type: "logout" });
 		localStorage.removeItem("token");
+		localStorage.removeItem("user");
 		navigate("/");
 	};
 
