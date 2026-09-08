@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { getCourses } from "../services/coursesService";
+import { Logo } from "./Logo.jsx";
 
 export const Navbar = () => {
 	const { store, dispatch } = useGlobalReducer();
@@ -58,7 +59,7 @@ export const Navbar = () => {
 		<nav className="navbar navbar-light bg-light">
 			<div className="container d-flex align-items-center justify-content-between">
 				<Link to="/">
-					<span className="navbar-brand mb-0 h1">Plataforma Blockchain</span>
+					<Logo size={32} />
 				</Link>
 
 				<form
