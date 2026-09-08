@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Feature from "../components/Feature";
+//import Feature from "../components/Feature";
+
 
 const LessonPage = () => {
 
@@ -146,7 +147,7 @@ const LessonPage = () => {
                     Ir al Quiz <i className="fa-solid fa-arrow-right"></i>
                 </Link>}
         </div>
-        <Feature />
+        {/* <Feature /> */}
     </div>
 
 }
