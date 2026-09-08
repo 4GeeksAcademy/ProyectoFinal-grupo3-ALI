@@ -6,8 +6,14 @@ export const Admin = () => {
     const [contenidoLeccion, setContenidoLeccion] = useState("");
     const [rutas, setRutas] = useState([]);
     const [modulos, setModulos] = useState([]);
+    const [listaDeUsuarios, setListaDeUsuarios] = useState([]);
     const [moduloElegido, setModuloElegido] = useState("");
     const [usuario, setUsuario] = useState(null);
+    const [formRutaAbierto, setFormRutaAbierto] = useState(false);
+    const [tituloRuta, setTituloRuta] = useState("");
+    const [formModuloAbierto, setFormModuloAbierto] = useState(null);
+    const [tituloModulo, setTituloModulo] = useState("");
+    const [nivelModulo, setNivelModulo] = useState("Principiante");
 
     const stats = {
         rutas: 4,
@@ -17,7 +23,6 @@ export const Admin = () => {
     };
 
     useEffect(() => {
-
         const userGuardado = localStorage.getItem("user");
         if (userGuardado) {
             setUsuario(JSON.parse(userGuardado));
@@ -33,10 +38,14 @@ export const Admin = () => {
             .then((res) => res.json())
             .then((data) => setModulos(data))
             .catch((err) => console.log("Error cargando módulos:", err));
+
+        fetch(backendUrl + "/api/users")
+            .then((res) => res.json())
+            .then((data) => setListaDeUsuarios(data))
+            .catch((err) => console.log("Error cargando usuarios:", err));
     }, []);
 
     const guardarLeccion = async (rutaId) => {
-        console.log("BOTÓN PRESIONADO", rutaId);
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
         try {
             const res = await fetch(backendUrl + "/api/lessons", {
@@ -49,7 +58,7 @@ export const Admin = () => {
                     title: tituloLeccion,
                     content: contenidoLeccion,
                     module_id: Number(moduloElegido),
-                    order_number: 1
+                    order_number: (modulos.find(modulo => modulo.id === Number(moduloElegido)).lessons.at(-1)?.order_number ?? 0)  + 1
                 })
             });
             const data = await res.json();
@@ -61,6 +70,50 @@ export const Admin = () => {
             setFormAbierto(null);
         } catch (err) {
             console.log("Error guardando:", err);
+        }
+    };
+
+    const guardarRuta = async () => {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        try {
+            const res = await fetch(backendUrl + "/api/learning-paths", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                body: JSON.stringify({ title: tituloRuta })
+            });
+            const data = await res.json();
+            setRutas([...rutas, data]);
+            setTituloRuta("");
+            setFormRutaAbierto(false);
+        } catch (err) {
+            console.log("Error guardando ruta:", err);
+        }
+    };
+
+    const guardarModulo = async (rutaId) => {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        try {
+            const res = await fetch(backendUrl + "/api/modules", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                body: JSON.stringify({
+                    title: tituloModulo,
+                    level: nivelModulo,
+                    learning_path_id: rutaId
+                })
+            });
+            const data = await res.json();
+            setModulos([...modulos, data]);
+            setTituloModulo("");
+            setFormModuloAbierto(null);
+        } catch (err) {
+            console.log("Error guardando módulo:", err);
         }
     };
 
@@ -89,25 +142,25 @@ export const Admin = () => {
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Rutas</div>
-                        <div className="fs-4 fw-bold">{stats.rutas}</div>
+                        <div className="fs-4 fw-bold">{rutas.length}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Módulos</div>
-                        <div className="fs-4 fw-bold">{stats.modulos}</div>
+                        <div className="fs-4 fw-bold">{modulos.length}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Lecciones</div>
-                        <div className="fs-4 fw-bold">{stats.lecciones}</div>
+                        <div className="fs-4 fw-bold">{modulos.reduce((total, modulo) => total + modulo.lessons?.length, 0)}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Usuarios</div>
-                        <div className="fs-4 fw-bold">{stats.usuarios}</div>
+                        <div className="fs-4 fw-bold">{listaDeUsuarios.length}</div>
                     </div>
                 </div>
             </div>
@@ -115,22 +168,88 @@ export const Admin = () => {
             <div className="card border">
                 <div className="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 className="fw-bold mb-0">Rutas de aprendizaje</h5>
-                    <button className="btn btn-dark btn-sm rounded-pill px-3">
-                        + Nueva ruta
+                    <button
+                        className="btn btn-dark btn-sm rounded-pill px-3"
+                        onClick={() => setFormRutaAbierto(!formRutaAbierto)}
+                    >
+                        {formRutaAbierto ? "Cancelar" : "+ Nueva ruta"}
                     </button>
                 </div>
                 <div className="card-body">
-                    {rutas.map((ruta) => (
+                    {formRutaAbierto && (
+                        <div className="border rounded p-3 mb-3 bg-light">
+                            <label className="form-label small fw-bold">Título de la ruta</label>
+                            <input
+                                type="text"
+                                className="form-control form-control-sm mb-2"
+                                placeholder="Ej. Fundamentos de Blockchain"
+                                value={tituloRuta}
+                                onChange={(e) => setTituloRuta(e.target.value)}
+                            />
+                            <button
+                                className="btn btn-dark btn-sm rounded-pill px-3"
+                                onClick={guardarRuta}
+                                disabled={!tituloRuta}
+                            >
+                                Guardar ruta
+                            </button>
+                        </div>
+                    )}
+
+                    {rutas.sort((a, b) => a.id - b.id).map((ruta) => (
                         <div className="border rounded p-3 mb-3" key={ruta.id}>
                             <div className="d-flex justify-content-between align-items-center">
                                 <span className="fw-bold">{ruta.title}</span>
-                                <button
-                                    className="btn btn-sm btn-outline-dark rounded-pill"
-                                    onClick={() => setFormAbierto(formAbierto === ruta.id ? null : ruta.id)}
-                                >
-                                    {formAbierto === ruta.id ? "Cancelar" : "+ Lección"}
-                                </button>
+                                <div className="d-flex gap-2">
+                                    <button
+                                        className="btn btn-sm btn-outline-secondary rounded-pill"
+                                        onClick={() => setFormModuloAbierto(formModuloAbierto === ruta.id ? null : ruta.id)}
+                                    >
+                                        {formModuloAbierto === ruta.id ? "Cancelar" : "+ Módulo"}
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline-dark rounded-pill"
+                                        onClick={() => setFormAbierto(formAbierto === ruta.id ? null : ruta.id)}
+                                    >
+                                        {formAbierto === ruta.id ? "Cancelar" : "+ Lección"}
+                                    </button>
+                                </div>
                             </div>
+
+                            {formModuloAbierto === ruta.id && (
+                                <div className="border-top mt-3 pt-3">
+                                    <div className="mb-2">
+                                        <label className="form-label small fw-bold">Título del módulo</label>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Ej. Módulo 1: Introducción"
+                                            value={tituloModulo}
+                                            onChange={(e) => setTituloModulo(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        <label className="form-label small fw-bold">Nivel</label>
+                                        <select
+                                            className="form-select form-select-sm"
+                                            value={nivelModulo}
+                                            onChange={(e) => setNivelModulo(e.target.value)}
+                                        >
+                                            <option value="Principiante">Principiante</option>
+                                            <option value="Intermedio">Intermedio</option>
+                                            <option value="Avanzado">Avanzado</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        className="btn btn-dark btn-sm rounded-pill px-3"
+                                        onClick={() => guardarModulo(ruta.id)}
+                                        disabled={!tituloModulo}
+                                    >
+                                        Guardar módulo
+                                    </button>
+                                </div>
+                            )}
+
                             {formAbierto === ruta.id && (
                                 <div className="border-top mt-3 pt-3">
                                     <div className="mb-2">
@@ -141,7 +260,7 @@ export const Admin = () => {
                                             onChange={(e) => setModuloElegido(e.target.value)}
                                         >
                                             <option value="">Selecciona un módulo</option>
-                                            {modulos.map((m) => (
+                                            {ruta.modules.map((m) => (
                                                 <option key={m.id} value={m.id}>
                                                     {m.title}
                                                 </option>

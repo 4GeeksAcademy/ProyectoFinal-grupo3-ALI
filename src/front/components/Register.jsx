@@ -47,7 +47,7 @@ export const Register = () => {
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: "480px" }}>
+        <div className="container" style={{ maxWidth: "480px" }}>
             <h2 className="text-center mb-4">Crear Cuenta</h2>
 
             {error && <div className="alert alert-danger">{error}</div>}

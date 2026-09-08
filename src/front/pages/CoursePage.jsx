@@ -9,6 +9,12 @@ const CoursePage = () => {
     const [userProgress, setUserProgress] = useState();
     const params = useParams();
 
+    const verifyUser = () => {
+        const user = localStorage.getItem("user");
+        if (user) return JSON.parse(user).role;
+        return null;
+    }
+
     const getLearningPath = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/learning-paths/${params.theId}`, {
@@ -30,22 +36,25 @@ const CoursePage = () => {
     }
 
     const getUserProgress = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/1`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
+        if (verifyUser() === "student") {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${JSON.parse(localStorage.getItem("user")).id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("No se pudo obtener el progreso del usuario");
                 }
-            });
+                const data = await response.json();
+                setUserProgress(data);
 
-            if (!response.ok) {
-                throw new Error("No se pudo obtener el progreso del usuario");
+            } catch (error) {
+                console.log(error);
             }
-            const data = await response.json();
-            setUserProgress(data);
-
-        } catch (error) {
-            console.log(error);
         }
     }
 
@@ -58,7 +67,7 @@ const CoursePage = () => {
     }
 
     const progressPath = () => {
-        return lessonsDoneOfPath()*100/totalLessonsOfPath();
+        return lessonsDoneOfPath() * 100 / totalLessonsOfPath();
     }
 
     useEffect(() => {
@@ -66,21 +75,31 @@ const CoursePage = () => {
         getUserProgress();
     }, [])
 
+    if (!learningPath) {
+        return (
+            <div className="container py-5 text-center" style={{height: "75vh"}}>
+                <div className="spinner-border" role="status"></div>
+            </div>
+        );
+    }
+
     return <div className="container mt-4">
-        <CourseDescription data={learningPath} />
+        <CourseDescription data={learningPath} userType={verifyUser()} />
         <div className="row my-3">
-            <div className="col-md-6 col-sm-12">
+            <div className="col">
                 <div className="d-flex justify-content-between">
                     <h3>Módulos</h3>
-                    <p>{learningPath?.number_of_modules} módulos</p>
+                    <p>{learningPath?.number_of_modules} {learningPath?.number_of_modules === 1 ? "módulo" : "módulos"}</p>
                 </div>
-                {learningPath?.modules.map((module, index) => {
-                    return <div key={module.id} className="mb-4">
-                        <ModuleCard data={module} userProgress={userProgress}/>
-                    </div>
-                })}
+                <div className="row">
+                    {learningPath?.modules.sort((a, b) => a.id - b.id).map((module, index) => {
+                        return <div key={module.id} className={`${verifyUser() === "student" ? "col-12" : "col-6"} mb-4`}>
+                            <ModuleCard path={learningPath.id} data={module} order={index + 1} userType={verifyUser()} userProgress={userProgress} />
+                        </div>
+                    })}
+                </div>
             </div>
-            <div className="col-md-6 col-sm-12">
+            {verifyUser() === "student" ? <div className="col">
                 <div className="card">
                     <div className="card-body">
                         <h4>Estado de tu aprendizaje</h4>
@@ -88,11 +107,11 @@ const CoursePage = () => {
                         <p>{progressPath()} % ({lessonsDoneOfPath()}/{totalLessonsOfPath()} lecciones)</p>
                         <div className="progress" role="progressbar">
                             <div className="progress-bar"
-                            style={{ width: `${progressPath()}%` }}></div>
+                                style={{ width: `${progressPath()}%` }}></div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> : ""}
         </div>
     </div>
 }

@@ -4,7 +4,7 @@ export const initialStore = () => {
     // Si ya había una sesión guardada (localStorage), la recuperamos al
     // recargar la página, para no cerrar la sesión sin querer.
     token: localStorage.getItem("token") || null,
-    user: null,
+    user: JSON.parse(localStorage.getItem("user")) || null,
     modules: [],
     learningPaths: [],
   };
