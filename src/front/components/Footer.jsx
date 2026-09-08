@@ -9,7 +9,7 @@ export const Footer = () => {
 			<div className="container text-white">
 				<div className="row g-4">
 					<div className="col-12 col-md-5">
-						<h5 className="fw-bold mb-2">BlockScholar</h5>
+						<h5 className="fw-bold mb-2">Blockali</h5>
 						<p className="text-white-50 small mb-0" style={{ maxWidth: "320px" }}>
 							Aprende blockchain con contenido técnico serio, sin hype ni promesas
 							de rendimientos.
@@ -49,7 +49,7 @@ export const Footer = () => {
 				<hr className="border-secondary my-4" />
 
 				<div className="text-white-50 small text-center">
-					© {año} BlockScholar
+					© {año} Blockali
 				</div>
 			</div>
 		</footer>
