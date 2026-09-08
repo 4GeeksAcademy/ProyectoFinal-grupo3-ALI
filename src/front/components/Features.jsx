@@ -26,7 +26,7 @@ export const Features = () => {
         <section className="py-5">
             <div className="container">
                 <div className="text-center mb-5">
-                    <h2 className="fw-bold">¿Por qué elegir BlockScholar?</h2>
+                    <h2 className="fw-bold">¿Por qué elegir Blockali?</h2>
                     <p className="text-secondary mx-auto" style={{ maxWidth: "600px" }}>
                         Un enfoque pedagógico diseñado para desarrolladores y profesionales
                         que valoran su tiempo y buscan profundidad técnica.

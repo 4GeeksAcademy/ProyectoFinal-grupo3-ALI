@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Login = () => {
@@ -38,8 +38,16 @@ export const Login = () => {
             // También lo guardamos en localStorage para no perder la sesión
             // si el usuario recarga la página.
             localStorage.setItem("token", data.token);
-            
-            navigate("/dashboard");
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            if (data.user.role === "admin") {
+                navigate("/admin");
+            }
+
+            if (data.user.role === "student") {
+                getUserProgress(data.user.id);
+            }
+
         } catch (err) {
             setError(err.message);
         } finally {
@@ -47,8 +55,85 @@ export const Login = () => {
         }
     };
 
+    const getUserProgress = async (user_id) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${user_id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo obtener el progreso del usuario");
+            }
+
+            const data = await response.json();
+
+            if (data.length === 0) {
+                getAllLessons(user_id);
+            }
+            else {
+                navigate("/dashboard");
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const getAllLessons = async (user_id) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/lessons`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if (!response.ok) {
+                throw new Error("No se pudo obtener información");
+            }
+
+            const data = await response.json();
+            const initialProgress = data.map((value, index) => ({
+                user_id: user_id,
+                lesson_id: value.id,
+                quiz_score: 0,
+                is_completed: false
+            }))
+            createProgress(initialProgress);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const createProgress = async (initialProgress) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(initialProgress)
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo inicializar el progreso");
+            }
+
+            const data = await response.json();
+            navigate("/dashboard");
+
+        } catch (error) {
+            setError(error.message);
+        }
+    }
+
     return (
-        <div className="card p-4 shadow-sm w-100" style={{ maxWidth: "400px", margin: "0 auto" }}>
+        <div className="card p-4 pb-5 shadow-sm w-100 mb-5" style={{ maxWidth: "400px", margin: "0 auto" }}>
             <h3 className="text-center mb-4">Iniciar Sesión</h3>
 
             {error && <div className="alert alert-danger py-2">{error}</div>}
@@ -66,7 +151,12 @@ export const Login = () => {
                     />
                 </div>
                 <div className="mb-3">
-                    <label className="form-label">Contraseña</label>
+                    <div className="d-flex justify-content-between">
+                        <label className="form-label">Contraseña</label>
+                        <Link to="/forgot-password" className="text-primary small">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
                     <input
                         type="password"
                         className="form-control"
