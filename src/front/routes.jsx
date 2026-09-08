@@ -17,6 +17,9 @@ import { Courses } from "./pages/Courses";
 import { Admin } from "./pages/Admin";
 import CoursePage from "./pages/CoursePage";
 import { QuizPage } from "./pages/QuizPage";
+import { VerifyEmail } from "./pages/VerifyEmail";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -44,12 +47,15 @@ export const router = createBrowserRouter(
           <Register />
         </div>
       } />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/dashboard" element={<Dashboard />} />
       {/* Hay que confirmar con nuestro lider Luis las rutas de courses */}
       <Route path="/courses" element={<Courses />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/quizzes/:lessonId" element={<QuizPage />} />
       <Route path="/course/:theId" element={<CoursePage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
     </Route>
   )
 );

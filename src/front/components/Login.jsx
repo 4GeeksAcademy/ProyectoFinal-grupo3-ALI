@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Login = () => {
@@ -38,7 +38,7 @@ export const Login = () => {
             // También lo guardamos en localStorage para no perder la sesión
             // si el usuario recarga la página.
             localStorage.setItem("token", data.token);
-            
+
             localStorage.setItem("user", JSON.stringify(data.user));
 
             navigate("/dashboard");
@@ -68,7 +68,12 @@ export const Login = () => {
                     />
                 </div>
                 <div className="mb-3">
-                    <label className="form-label">Contraseña</label>
+                    <div className="d-flex justify-content-between">
+                        <label className="form-label">Contraseña</label>
+                        <Link to="/forgot-password" className="text-primary small">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
                     <input
                         type="password"
                         className="form-control"

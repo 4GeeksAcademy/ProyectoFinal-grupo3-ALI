@@ -12,18 +12,29 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import create_access_token, JWTManager
+from api.mail import mail
 
 # from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv(
     "FLASK_APP_KEY", "super-secret-fallback")
 jwt = JWTManager(app)
 CORS(app)
 app.url_map.strict_slashes = False
+
+# ---- Flask-Mail config (debe ir después de crear `app`) ----
+app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
+app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True") == "True"
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
+mail.init_app(app)
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -44,6 +55,7 @@ setup_admin(app)
 setup_commands(app)
 
 # Add all endpoints form the API with a "api" prefix
+# (aquí viven /api/signup, /api/login, /api/verify-email, etc. - ver routes.py)
 app.register_blueprint(api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
@@ -72,40 +84,6 @@ def serve_any_other_file(path):
     response = send_from_directory(static_file_dir, path)
     response.cache_control.max_age = 0  # avoid cache memory
     return response
-
-
-# ---- AUTH ----
-
-@app.route('/api/signup', methods=['POST'])
-def signup():
-    body = request.json
-    if not body.get("email") or not body.get("password"):
-        return jsonify({"error": "Email and password are required"}), 400
-    existing_user = db.session.execute(
-        db.select(User).filter_by(email=body["email"])).scalar()
-    if existing_user:
-        return jsonify({"error": "Email already exists"}), 400
-    user = User(
-        email=body["email"],
-        username=body.get("username"),
-        is_active=True,
-        role=body.get("role", "student")
-    )
-    user.set_password(body["password"])
-    db.session.add(user)
-    db.session.commit()
-    return jsonify(user.serialize()), 201
-
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    body = request.json
-    user = db.session.execute(
-        db.select(User).filter_by(email=body["email"])).scalar()
-    if not user or not user.check_password(body["password"]):
-        return jsonify({"error": "Invalid credentials"}), 401
-    token = create_access_token(identity=str(user.id))
-    return jsonify({"token": token, "user": user.serialize()}), 200
 
 
 # this only runs if `$ python src/main.py` is executed
