@@ -289,7 +289,15 @@ def get_user(user_id):
 @api.route('/learning-paths', methods=['GET'])
 def get_learning_paths():
     paths = db.session.execute(db.select(LearningPath)).scalars().all()
-    return jsonify([{"id": p.id, "title": p.title, "image_url": p.image_url, "description": p.description, "time_required": p.time_required, "level": p.level, "number_of_modules": len(p.modules)} for p in paths]), 200
+    return jsonify([{
+        "id": p.id,
+        "title": p.title,
+        "image_url": p.image_url,
+        "description": p.description,
+        "time_required": p.time_required,
+        "level": p.level,
+        "number_of_modules": len(p.modules),
+        "modules": [{"id": m.id, "title": m.title} for m in p.modules]} for p in paths]), 200
 
 
 @api.route('/learning-paths/<int:path_id>', methods=['GET'])
@@ -305,7 +313,7 @@ def get_learning_path(path_id):
         "time_required": path.time_required,
         "level": path.level,
         "number_of_modules": len(path.modules),
-        "modules": [{"id": m.id, "title": m.title} for m in path.modules]}), 200
+        "modules": [{"id": m.id, "title": m.title, "lessons": [{"id": l.id, "title": l.title} for l in m.lessons]} for m in path.modules]}), 200
 
 
 @api.route('/learning-paths', methods=['POST'])
@@ -324,7 +332,12 @@ def create_learning_path():
 @api.route('/modules', methods=['GET'])
 def get_modules():
     modules = db.session.execute(db.select(Module)).scalars().all()
-    return jsonify([{"id": m.id, "title": m.title, "level": m.level, "learning_path_id": m.learning_path_id} for m in modules]), 200
+    return jsonify([{
+        "id": m.id,
+        "title": m.title,
+        "level": m.level,
+        "learning_path_id": m.learning_path_id,
+        "lessons": [{"id": l.id, "title": l.title, "order_number": l.order_number} for l in m.lessons]} for m in modules]), 200
 
 
 @api.route('/modules/<int:module_id>', methods=['GET'])
@@ -343,7 +356,7 @@ def create_module():
         "level"), learning_path_id=body["learning_path_id"])
     db.session.add(module)
     db.session.commit()
-    return jsonify({"id": module.id, "title": module.title}), 201
+    return jsonify({"id": module.id, "title": module.title, "lessons": []}), 201
 
 # ---- LESSONS ----
 
@@ -359,7 +372,13 @@ def get_lesson(lesson_id):
     lesson = db.session.get(Lesson, lesson_id)
     if not lesson:
         return jsonify({"error": "Lesson not found"}), 404
-    return jsonify({"id": lesson.id, "title": lesson.title, "content": lesson.content}), 200
+    return jsonify({
+        "id": lesson.id,
+        "title": lesson.title,
+        "module_id": lesson.module_id,
+        "content": lesson.content,
+        "order_number": lesson.order_number,
+        "module_lessons": [{"id": l.id, "order": l.order_number} for l in lesson.module.lessons]}), 200
 
 
 @api.route('/lessons', methods=['POST'])
@@ -404,24 +423,73 @@ def create_quiz():
 @api.route('/progress/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_user_progress(user_id):
+
+    current_user_id = int(get_jwt_identity())
+    if current_user_id != user_id:
+        return jsonify({"error": "No tienes permiso para acceder a este recurso"}), 403
+
     progress = db.session.execute(
         db.select(UserProgress).filter_by(user_id=user_id)).scalars().all()
-    return jsonify([{"lesson_id": p.lesson_id, "is_completed": p.is_completed, "quiz_score": p.quiz_score} for p in progress]), 200
+
+    if not progress:
+        return jsonify([]), 200
+
+    return jsonify([{"lesson_id": p.lesson_id, "lesson_title": p.lesson.title, "is_completed": p.is_completed, "quiz_score": p.quiz_score} for p in progress]), 200
+
+
+@api.route('/progress/<int:user_id>/<int:lesson_id>', methods=['GET'])
+@jwt_required()
+def get_lesson_progress(user_id, lesson_id):
+    progress = db.session.execute(db.select(UserProgress).filter_by(
+        user_id=user_id, lesson_id=lesson_id)).scalars().one_or_none()
+    return jsonify({"lesson_id": progress.lesson_id,
+                    "is_completed": progress.is_completed,
+                    "quiz_score": progress.quiz_score}), 200
 
 
 @api.route('/progress', methods=['POST'])
-@jwt_required()
-def update_progress():
-    body = request.json
-    progress = UserProgress(
-        user_id=body["user_id"],
-        lesson_id=body["lesson_id"],
-        quiz_score=body.get("quiz_score"),
-        is_completed=body.get("is_completed", False)
-    )
-    db.session.add(progress)
-    db.session.commit()
-    return jsonify({"message": "Progress saved"}), 201
+def create_initial_progress():
+    body = request.get_json()
+
+    if not isinstance(body, list):
+        return jsonify({"error": "Se esperaba una lista de objetos JSON"}), 400
+
+    initial_progress = []
+
+    try:
+        for item in body:
+            progress = UserProgress(
+                user_id=item["user_id"],
+                lesson_id=item["lesson_id"],
+                quiz_score=item.get("quiz_score", 0),
+                is_completed=item.get("is_completed", False)
+            )
+            initial_progress.append(progress)
+
+        db.session.add_all(initial_progress)
+        db.session.commit()
+        return jsonify({"message": "Progress created"}), 201
+
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({"error": str(error)}), 500
+
+
+@api.route('/progress/<int:user_id>/<int:lesson_id>', methods=['PUT'])
+def update_progress(user_id, lesson_id):
+    body = request.get_json(silent=True)
+    progress = db.session.execute(db.select(UserProgress).filter_by(
+        user_id=user_id, lesson_id=lesson_id)).scalars().one_or_none()
+
+    try:
+        progress.is_completed = body.get("is_completed", progress.is_completed)
+        progress.quiz_score = body.get("quiz_score", progress.quiz_score)
+        db.session.commit()
+        return jsonify({"message": "Progress updated"})
+
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({"error": str(error)}), 500
 
 
 @api.route('/dashboard', methods=['GET'])

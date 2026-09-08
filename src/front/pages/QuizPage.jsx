@@ -7,6 +7,33 @@ export const QuizPage = () => {
     const [quiz, setQuiz] = useState(null);
     const [respuestas, setRespuestas] = useState({});
     const [enviado, setEnviado] = useState(false);
+    const [error, setError] = useState("");
+    const params = useParams();
+
+    const setScore = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/3/${params.lessonId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "quiz_score": calcularNota() / quiz.questions_data.length * 100,
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo guardar el score");
+            }
+
+            const data = await response.json();
+
+            setEnviado(true);
+
+        } catch (error) {
+            setError(error.message);
+        }
+    }
 
     useEffect(() => {
         getQuizByLesson(lessonId).then((data) => setQuiz(data));
@@ -36,7 +63,8 @@ export const QuizPage = () => {
                 <div className="card-body">
                     <span className="badge bg-dark mb-2">EVALUACIÓN</span>
                     <h3 className="fw-bold">{quiz.title}</h3>
-                    <p className="text-secondary mb-0">{quiz.description}</p>
+                    {JSON.parse(localStorage.getItem("user")).role === "student" ?
+                        <p className="text-secondary mb-0">{quiz.description}</p> : ""}
                 </div>
             </div>
             {quiz.questions_data.map((pregunta, index) => (
@@ -46,30 +74,36 @@ export const QuizPage = () => {
                             <span className="badge bg-light text-dark border">
                                 Pregunta {index + 1} de {quiz.questions_data.length}
                             </span>
-                            <span className="small text-secondary">Selecciona una respuesta</span>
+                            {JSON.parse(localStorage.getItem("user")).role === "student" ?
+                                <span className="small text-secondary">Selecciona una respuesta</span> : ""}
                         </div>
                         <h5 className="fw-bold mb-3">{pregunta.question_text}</h5>
 
                         {["a", "b", "c"].map((letra) => (
                             <div
                                 key={letra}
-                                className={`border rounded p-3 mb-2 ${respuestas[index] === letra ? "border-dark bg-light" : ""}`}
+                                className={`border rounded p-3 mb-2
+                                        ${respuestas[index] === letra ? "border-dark bg-light" : ""}
+                                        ${letra === pregunta.correct_option &&
+                                        JSON.parse(localStorage.getItem("user")).role === "admin" ?
+                                        "bg bg-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
-                                onClick={() => setRespuestas({ ...respuestas, [index]: letra })}
+                                onClick={() => { if (!enviado) setRespuestas({ ...respuestas, [index]: letra }) }}
                             >
                                 <span className="badge bg-light text-dark border me-2">
                                     {letra.toUpperCase()}
                                 </span>
                                 {pregunta["option_" + letra]}
                             </div>
-                        ))}
+                        )
+                        )}
                     </div>
                 </div>
             ))}
-            {!enviado ? (
+            {JSON.parse(localStorage.getItem("user")).role !== "student" ? "" : !enviado ? (
                 <button
                     className="btn btn-dark rounded-pill px-4"
-                    onClick={() => setEnviado(true)}
+                    onClick={() => setScore()}
                     disabled={Object.keys(respuestas).length < quiz.questions_data.length}
                 >
                     Enviar respuestas

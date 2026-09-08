@@ -8,12 +8,18 @@ export const Dashboard = () => {
     const [progress, setProgress] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [usuario, setUsuario] = useState(null);
 
     useEffect(() => {
         // Si no hay sesión iniciada, no tiene caso mostrar el panel: mandamos a login.
         if (!store.token) {
             navigate("/login");
             return;
+        }
+
+        const userGuardado = localStorage.getItem("user");
+        if (userGuardado) {
+            setUsuario(JSON.parse(userGuardado));
         }
 
         const cargarDatos = async () => {
@@ -61,11 +67,22 @@ export const Dashboard = () => {
     const total = progress.length;
     const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
 
+    if (!usuario || usuario.role !== "student") {
+        return (
+            <div className="container py-5 text-center">
+                <h3 className="fw-bold">No disponible</h3>
+                <p className="text-secondary">
+                    Sección de estudiantes.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="container py-4">
             <h2 className="fw-bold mb-1">Panel del Estudiante</h2>
             <p className="text-secondary mb-4">
-                Bienvenido{store.user?.email ? `, ${store.user.email}` : ""}
+                Bienvenido{store.user?.username ? `, ${store.user.username}` : ""}
             </p>
 
             <div className="card border mb-4">
@@ -103,7 +120,7 @@ export const Dashboard = () => {
                             {/* TODO: el backend hoy solo da lesson_id, no el título de la
                                 lección — pedirle a nuestro lider Luis o al equipo que /api/progress incluya
                                 lesson_title para mostrar algo más claro que un número. */}
-                            <span>Lección #{item.lesson_id}</span>
+                            <span>Lección: {item.lesson_title}</span>
                             <span className={`badge ${item.is_completed ? "bg-success" : "bg-secondary"}`}>
                                 {item.is_completed ? "Completada" : "En progreso"}
                             </span>

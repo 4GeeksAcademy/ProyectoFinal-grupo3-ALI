@@ -6,6 +6,7 @@ export const Admin = () => {
     const [contenidoLeccion, setContenidoLeccion] = useState("");
     const [rutas, setRutas] = useState([]);
     const [modulos, setModulos] = useState([]);
+    const [listaDeUsuarios, setListaDeUsuarios] = useState([]);
     const [moduloElegido, setModuloElegido] = useState("");
     const [usuario, setUsuario] = useState(null);
     const [formRutaAbierto, setFormRutaAbierto] = useState(false);
@@ -37,6 +38,11 @@ export const Admin = () => {
             .then((res) => res.json())
             .then((data) => setModulos(data))
             .catch((err) => console.log("Error cargando módulos:", err));
+
+        fetch(backendUrl + "/api/users")
+            .then((res) => res.json())
+            .then((data) => setListaDeUsuarios(data))
+            .catch((err) => console.log("Error cargando usuarios:", err));
     }, []);
 
     const guardarLeccion = async (rutaId) => {
@@ -52,7 +58,7 @@ export const Admin = () => {
                     title: tituloLeccion,
                     content: contenidoLeccion,
                     module_id: Number(moduloElegido),
-                    order_number: 1
+                    order_number: (modulos.find(modulo => modulo.id === Number(moduloElegido)).lessons.at(-1)?.order_number ?? 0)  + 1
                 })
             });
             const data = await res.json();
@@ -136,25 +142,25 @@ export const Admin = () => {
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Rutas</div>
-                        <div className="fs-4 fw-bold">{stats.rutas}</div>
+                        <div className="fs-4 fw-bold">{rutas.length}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Módulos</div>
-                        <div className="fs-4 fw-bold">{stats.modulos}</div>
+                        <div className="fs-4 fw-bold">{modulos.length}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Lecciones</div>
-                        <div className="fs-4 fw-bold">{stats.lecciones}</div>
+                        <div className="fs-4 fw-bold">{modulos.reduce((total, modulo) => total + modulo.lessons?.length, 0)}</div>
                     </div>
                 </div>
                 <div className="col-6 col-lg-3">
                     <div className="card border p-3">
                         <div className="text-secondary small text-uppercase">Usuarios</div>
-                        <div className="fs-4 fw-bold">{stats.usuarios}</div>
+                        <div className="fs-4 fw-bold">{listaDeUsuarios.length}</div>
                     </div>
                 </div>
             </div>
@@ -190,7 +196,7 @@ export const Admin = () => {
                         </div>
                     )}
 
-                    {rutas.map((ruta) => (
+                    {rutas.sort((a, b) => a.id - b.id).map((ruta) => (
                         <div className="border rounded p-3 mb-3" key={ruta.id}>
                             <div className="d-flex justify-content-between align-items-center">
                                 <span className="fw-bold">{ruta.title}</span>
@@ -254,7 +260,7 @@ export const Admin = () => {
                                             onChange={(e) => setModuloElegido(e.target.value)}
                                         >
                                             <option value="">Selecciona un módulo</option>
-                                            {modulos.map((m) => (
+                                            {ruta.modules.map((m) => (
                                                 <option key={m.id} value={m.id}>
                                                     {m.title}
                                                 </option>

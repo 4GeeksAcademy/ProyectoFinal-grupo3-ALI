@@ -45,7 +45,7 @@ export const Courses = () => {
                         contratos inteligentes y protocolos DeFi.
                     </p>
                 </div>
-                <div className="col-md-4">
+                {localStorage.getItem("token") ? "" : <div className="col-md-4">
                     <div className="border rounded p-3">
                         <h6 className="fw-bold">
                             <i className="fa-regular fa-user me-2"></i>
@@ -57,7 +57,8 @@ export const Courses = () => {
                         </p>
                         <button className="btn btn-dark w-100">Registrarme Gratis</button>
                     </div>
-                </div>
+                </div>}
+                
             </div>
 
             {/* Buscador y filtros por nivel */}
@@ -76,7 +77,7 @@ export const Courses = () => {
 
             {/* Grilla de tarjetas de cursos */}
             <div className="row g-4 mb-5">
-                {filteredCourses.map((course) => (
+                {filteredCourses.sort((a, b) => a.id - b.id).map((course) => (
                     <div className="col-md-4" key={course.id}>
                         <CourseCard course={course} />
                     </div>
