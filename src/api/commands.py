@@ -72,12 +72,36 @@ def setup_commands(app):
                                 "content": "Una blockchain es un registro distribuido que agrupa transacciones en bloques enlazados y verificables.",
                                 "questions": [
                                     {
-                                        "question_text": "¿Qué característica distingue a una blockchain?",
-                                        "option_a": "Es un registro distribuido",
-                                        "option_b": "Solo funciona sin internet",
-                                        "option_c": "No usa criptografía",
+                                        "question_text": "¿Qué garantiza que un bloque ya escrito no pueda alterarse sin que la red lo note?",
+                                        "option_a": "Cada bloque guarda el hash del anterior, así que alterar uno rompe toda la cadena",
+                                        "option_b": "Los bloques se cifran con la clave del minero",
+                                        "option_c": "Un servidor central verifica cada bloque",
                                         "correct_option": "a",
-                                        "explanation": "La información se replica entre varios participantes de la red."
+                                        "explanation": "El encadenamiento por hash hace inmutable el historial: cambiar un bloque obliga a recalcular todos los siguientes."
+                                    },
+                                    {
+                                        "question_text": "¿Qué significa que una blockchain sea descentralizada?",
+                                        "option_a": "Que está en varios servidores de la misma empresa",
+                                        "option_b": "Que muchos nodos independientes guardan el registro y validan las transacciones",
+                                        "option_c": "Que no tiene dueño legal registrado",
+                                        "correct_option": "b",
+                                        "explanation": "La descentralización está en quién valida y guarda el registro, sin una autoridad única."
+                                    },
+                                    {
+                                        "question_text": "¿Qué es un nodo?",
+                                        "option_a": "Una computadora que participa en la red guardando y validando el registro",
+                                        "option_b": "Cada transacción dentro de un bloque",
+                                        "option_c": "La dirección pública de una wallet",
+                                        "correct_option": "a",
+                                        "explanation": "Cuantos más nodos independientes, más difícil es censurar o alterar la cadena."
+                                    },
+                                    {
+                                        "question_text": "¿Por qué se dice que una blockchain pública es transparente?",
+                                        "option_a": "Porque revela la identidad real de cada usuario",
+                                        "option_b": "Porque cualquiera puede leer el historial completo de transacciones",
+                                        "option_c": "Porque las empresas publican sus balances en la cadena",
+                                        "correct_option": "b",
+                                        "explanation": "Transparencia no es identidad: el historial es público, pero las direcciones son seudónimas."
                                     }
                                 ]
                             },
@@ -87,11 +111,35 @@ def setup_commands(app):
                                 "questions": [
                                     {
                                         "question_text": "¿Qué permite hacer una clave privada?",
-                                        "option_a": "Cambiar el precio de un token",
-                                        "option_b": "Firmar transacciones",
-                                        "option_c": "Eliminar un bloque",
+                                        "option_a": "Ocultar tu saldo a los demás usuarios",
+                                        "option_b": "Firmar transacciones y demostrar que controlas los fondos de una dirección",
+                                        "option_c": "Recuperar fondos enviados por error",
                                         "correct_option": "b",
-                                        "explanation": "La clave privada autoriza operaciones mediante firmas criptográficas."
+                                        "explanation": "La clave privada es control. Quien la tiene, mueve los fondos."
+                                    },
+                                    {
+                                        "question_text": "Si pierdes tu frase semilla y no tienes otra copia, ¿qué pasa con tus fondos?",
+                                        "option_a": "Se pierden de forma definitiva",
+                                        "option_b": "Los recuperas verificando tu identidad con el proveedor",
+                                        "option_c": "Vuelven automáticamente a la dirección de origen",
+                                        "correct_option": "a",
+                                        "explanation": "En una wallet no custodial nadie más tiene la clave. No hay soporte que pueda recuperarla."
+                                    },
+                                    {
+                                        "question_text": "¿Cuál es la diferencia entre una wallet custodial y una no custodial?",
+                                        "option_a": "La custodial cobra comisiones y la otra es gratuita",
+                                        "option_b": "En la custodial un tercero guarda tus claves; en la no custodial las guardas tú",
+                                        "option_c": "La no custodial solo funciona con Bitcoin",
+                                        "correct_option": "b",
+                                        "explanation": "La diferencia está en quién controla las claves, y con ellas los fondos."
+                                    },
+                                    {
+                                        "question_text": "¿Qué puedes compartir sin riesgo para recibir un pago?",
+                                        "option_a": "Tu clave privada",
+                                        "option_b": "Tu frase semilla",
+                                        "option_c": "Tu dirección pública",
+                                        "correct_option": "c",
+                                        "explanation": "La dirección se deriva de la clave privada, pero el proceso no es reversible."
                                     }
                                 ]
                             }
@@ -105,12 +153,36 @@ def setup_commands(app):
                                 "content": "Proof of Work requiere resolver un problema computacional para proponer y validar nuevos bloques.",
                                 "questions": [
                                     {
-                                        "question_text": "¿Qué mecanismo utiliza originalmente Bitcoin?",
-                                        "option_a": "Proof of Work",
-                                        "option_b": "Proof of Authority",
-                                        "option_c": "Proof of History",
+                                        "question_text": "¿En qué consiste el trabajo que hacen los mineros en Proof of Work?",
+                                        "option_a": "Votar por el siguiente bloque según cuántas monedas tienen",
+                                        "option_b": "Buscar por fuerza bruta un valor que produzca un hash bajo un objetivo dado",
+                                        "option_c": "Verificar manualmente la identidad de quienes transaccionan",
+                                        "correct_option": "b",
+                                        "explanation": "El minero prueba millones de valores hasta dar con uno válido. Ese costo asegura la red."
+                                    },
+                                    {
+                                        "question_text": "¿Por qué el gasto de energía es parte del diseño y no un defecto?",
+                                        "option_a": "Porque hace que atacar la red sea económicamente caro",
+                                        "option_b": "Porque acelera las transacciones",
+                                        "option_c": "Porque permite más datos por bloque",
                                         "correct_option": "a",
-                                        "explanation": "Bitcoin utiliza Proof of Work para alcanzar consenso."
+                                        "explanation": "Reescribir la cadena exigiría más poder de cómputo que el resto de la red junta."
+                                    },
+                                    {
+                                        "question_text": "¿Cuál es la diferencia central entre Proof of Work y Proof of Stake?",
+                                        "option_a": "PoW usa poder de cómputo, PoS usa capital bloqueado como garantía",
+                                        "option_b": "PoW es para Bitcoin y PoS solo para tokens sin valor",
+                                        "option_c": "PoW no permite smart contracts y PoS sí",
+                                        "correct_option": "a",
+                                        "explanation": "Ambos buscan que atacar salga caro: uno lo respalda con energía y el otro con capital en riesgo."
+                                    },
+                                    {
+                                        "question_text": "¿Qué es un ataque del 51%?",
+                                        "option_a": "Cuando el 51% de los usuarios vende al mismo tiempo",
+                                        "option_b": "Cuando una entidad controla más de la mitad del poder de minado y puede reescribir bloques recientes",
+                                        "option_c": "Cuando el 51% de los nodos se desconecta",
+                                        "correct_option": "b",
+                                        "explanation": "Con mayoría de hashrate se pueden revertir transacciones recientes, aunque no robar fondos ajenos."
                                     }
                                 ]
                             }
@@ -133,12 +205,36 @@ def setup_commands(app):
                                 "content": "Un contrato de Solidity define variables de estado, funciones y reglas que ejecuta la EVM.",
                                 "questions": [
                                     {
-                                        "question_text": "¿Dónde se ejecuta un smart contract de Ethereum?",
-                                        "option_a": "En la EVM",
-                                        "option_b": "Solo en el navegador",
-                                        "option_c": "En una hoja de cálculo",
+                                        "question_text": "¿Qué indica la línea pragma solidity ^0.8.20;?",
+                                        "option_a": "La versión del contrato que se está escribiendo",
+                                        "option_b": "Las versiones del compilador con las que el contrato puede compilarse",
+                                        "option_c": "La cantidad de gas que consumirá",
+                                        "correct_option": "b",
+                                        "explanation": "El pragma restringe qué compilador puede usarse, para que cambios del lenguaje no rompan el contrato."
+                                    },
+                                    {
+                                        "question_text": "¿Qué diferencia hay entre una variable public y una private?",
+                                        "option_a": "La private está cifrada y nadie puede leerla",
+                                        "option_b": "La public genera una función de lectura automática; la private solo restringe el acceso desde código",
+                                        "option_c": "La public se guarda en la cadena y la private en el servidor",
+                                        "correct_option": "b",
+                                        "explanation": "Todo lo que está en la cadena es legible. private limita el acceso desde código, no la visibilidad."
+                                    },
+                                    {
+                                        "question_text": "¿Qué significa que una función esté marcada como payable?",
+                                        "option_a": "Que puede recibir ether al ser llamada",
+                                        "option_b": "Que quien la llama paga una comisión extra al creador",
+                                        "option_c": "Que devuelve fondos automáticamente",
                                         "correct_option": "a",
-                                        "explanation": "La Ethereum Virtual Machine ejecuta el bytecode del contrato."
+                                        "explanation": "Sin payable, una función que reciba ether revierte la transacción."
+                                    },
+                                    {
+                                        "question_text": "¿Qué implica que un contrato desplegado sea inmutable?",
+                                        "option_a": "Que su código no puede modificarse una vez en la red",
+                                        "option_b": "Que nadie puede llamar a sus funciones sin permiso",
+                                        "option_c": "Que su saldo queda bloqueado para siempre",
+                                        "correct_option": "a",
+                                        "explanation": "Por eso las auditorías importan: un error desplegado no se corrige, hay que desplegar otro contrato."
                                     }
                                 ]
                             }
