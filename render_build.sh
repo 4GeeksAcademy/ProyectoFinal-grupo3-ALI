@@ -5,5 +5,7 @@ set -o errexit
 npm install
 npm run build
 
-pipenv install --deploy
-pipenv run flask db upgrade
+python -m pip install pipenv
+python -m pipenv install --deploy
+
+python -m pipenv run upgrade
