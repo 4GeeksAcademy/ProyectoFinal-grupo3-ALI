@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-//import Feature from "../components/Feature";
-
 
 const LessonPage = () => {
 
@@ -11,6 +9,14 @@ const LessonPage = () => {
     const [lesson, setLesson] = useState();
     const [userProgress, setUserProgress] = useState({});
     const [error, setError] = useState("");
+
+    // Lee el usuario de forma segura: si no hay sesión, devuelve null
+    // en vez de tronar con JSON.parse(null).role
+    const getCurrentUser = () => {
+        const raw = localStorage.getItem("user");
+        return raw ? JSON.parse(raw) : null;
+    };
+    const currentUser = getCurrentUser();
 
     const getLesson = async () => {
         try {
@@ -34,9 +40,9 @@ const LessonPage = () => {
     }
 
     const getUserProgress = async () => {
-        if (JSON.parse(localStorage.getItem("user")).role === "student") {
+        if (currentUser?.role === "student") {
             try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${JSON.parse(localStorage.getItem("user")).id}/${params.lessonId}`, {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${currentUser.id}/${params.lessonId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -59,12 +65,15 @@ const LessonPage = () => {
 
     const handleLessonDone = async () => {
 
+        if (!currentUser) return;
+
         if (!userProgress.is_completed) {
             try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/3/${params.lessonId}`, {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${currentUser.id}/${params.lessonId}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
                     },
                     body: JSON.stringify({
                         "is_completed": true,
@@ -118,7 +127,7 @@ const LessonPage = () => {
             <div>
                 <p className="badge bg-info-subtle text-info-emphasis border me-2">Lección {lesson?.order_number}</p>
             </div>
-            {JSON.parse(localStorage.getItem("user")).role === "student" ?
+            {currentUser?.role === "student" ?
                 <div className="ms-auto">
                     <button type="button"
                         className={`btn ${userProgress?.is_completed ?
@@ -147,7 +156,6 @@ const LessonPage = () => {
                     Ir al Quiz <i className="fa-solid fa-arrow-right"></i>
                 </Link>}
         </div>
-        {/* <Feature /> */}
     </div>
 
 }

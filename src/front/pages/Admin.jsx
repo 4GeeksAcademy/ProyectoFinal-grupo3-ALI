@@ -39,7 +39,9 @@ export const Admin = () => {
             .then((data) => setModulos(data))
             .catch((err) => console.log("Error cargando módulos:", err));
 
-        fetch(backendUrl + "/api/users")
+        fetch(backendUrl + "/api/users", {
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        })
             .then((res) => res.json())
             .then((data) => setListaDeUsuarios(data))
             .catch((err) => console.log("Error cargando usuarios:", err));
@@ -58,7 +60,7 @@ export const Admin = () => {
                     title: tituloLeccion,
                     content: contenidoLeccion,
                     module_id: Number(moduloElegido),
-                    order_number: (modulos.find(modulo => modulo.id === Number(moduloElegido)).lessons.at(-1)?.order_number ?? 0)  + 1
+                    order_number: (modulos.find(modulo => modulo.id === Number(moduloElegido)).lessons.at(-1)?.order_number ?? 0) + 1
                 })
             });
             const data = await res.json();
