@@ -73,11 +73,11 @@ const CoursePage = () => {
     useEffect(() => {
         getLearningPath();
         getUserProgress();
-    }, [])
+    }, [params.theId])
 
     if (!learningPath) {
         return (
-            <div className="container py-5 text-center" style={{height: "75vh"}}>
+            <div className="container py-5 text-center" style={{ height: "75vh" }}>
                 <div className="spinner-border" role="status"></div>
             </div>
         );
