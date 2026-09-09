@@ -10,12 +10,23 @@ export const QuizPage = () => {
     const [error, setError] = useState("");
     const params = useParams();
 
+    // Lee el usuario de forma segura: si no hay sesión, devuelve null
+    // en vez de tronar con JSON.parse(null).role
+    const getCurrentUser = () => {
+        const raw = localStorage.getItem("user");
+        return raw ? JSON.parse(raw) : null;
+    };
+    const currentUser = getCurrentUser();
+
     const setScore = async () => {
+        if (!currentUser) return;
+
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/3/${params.lessonId}`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/progress/${currentUser.id}/${params.lessonId}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify({
                     "quiz_score": calcularNota() / quiz.questions_data.length * 100,
@@ -63,7 +74,7 @@ export const QuizPage = () => {
                 <div className="card-body">
                     <span className="badge bg-dark mb-2">EVALUACIÓN</span>
                     <h3 className="fw-bold">{quiz.title}</h3>
-                    {JSON.parse(localStorage.getItem("user")).role === "student" ?
+                    {currentUser?.role === "student" ?
                         <p className="text-secondary mb-0">{quiz.description}</p> : ""}
                 </div>
             </div>
@@ -74,7 +85,7 @@ export const QuizPage = () => {
                             <span className="badge bg-light text-dark border">
                                 Pregunta {index + 1} de {quiz.questions_data.length}
                             </span>
-                            {JSON.parse(localStorage.getItem("user")).role === "student" ?
+                            {currentUser?.role === "student" ?
                                 <span className="small text-secondary">Selecciona una respuesta</span> : ""}
                         </div>
                         <h5 className="fw-bold mb-3">{pregunta.question_text}</h5>
@@ -85,7 +96,7 @@ export const QuizPage = () => {
                                 className={`border rounded p-3 mb-2
                                         ${respuestas[index] === letra ? "border-dark bg-light" : ""}
                                         ${letra === pregunta.correct_option &&
-                                        JSON.parse(localStorage.getItem("user")).role === "admin" ?
+                                        currentUser?.role === "admin" ?
                                         "bg bg-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
                                 onClick={() => { if (!enviado) setRespuestas({ ...respuestas, [index]: letra }) }}
@@ -100,7 +111,7 @@ export const QuizPage = () => {
                     </div>
                 </div>
             ))}
-            {JSON.parse(localStorage.getItem("user")).role !== "student" ? "" : !enviado ? (
+            {currentUser?.role !== "student" ? "" : !enviado ? (
                 <button
                     className="btn btn-dark rounded-pill px-4"
                     onClick={() => setScore()}
